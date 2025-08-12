@@ -1,0 +1,32 @@
+{
+  "suspiciousPatterns": [
+    "russia",
+    "russian",
+    "hack",
+    "hacker",
+    "malicious",
+    "moscow",
+    "kremlin",
+    "putin",
+    "virus",
+    "trojan",
+    "suspicious",
+    "attack",
+    "breach",
+    "injection",
+    "bot",
+    "spam",
+    "phishing",
+    "scam"
+  ],
+  "emergencyContacts": [
+    "honeyreorganizer@gmail.com",
+    "vaishalidak0901@gmail.com"
+  ],
+  "backupSchedule": "Daily at 2:00 AM IST",
+  "monitoringEndpoints": [
+    "/api/auth/login",
+    "/api/auth/register",
+    "/api/admin-login"
+  ]
+}
