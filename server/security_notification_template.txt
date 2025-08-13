@@ -1,0 +1,33 @@
+
+Subject: Important Security Update - KalaSangam Platform
+
+Dear KalaSangam User,
+
+We have completed a comprehensive security update to protect your account and data.
+
+WHAT WE DID:
+✅ Removed a malicious test account
+✅ Enhanced password security requirements
+✅ Updated authentication system
+✅ Implemented additional protective measures
+
+WHAT YOU NEED TO DO:
+1. Log in again to your account (your previous session has been reset for security)
+2. If prompted, update your password to meet our new security requirements:
+   - Minimum 12 characters
+   - Include uppercase and lowercase letters
+   - Include numbers and special characters
+   - Avoid common passwords
+
+YOUR DATA IS SAFE:
+- All your artworks, profiles, and settings are preserved
+- No personal information was compromised
+- This was a preventive security measure
+
+If you have any questions or need assistance, please contact our support team.
+
+Thank you for your understanding.
+
+Best regards,
+KalaSangam Security Team
+    

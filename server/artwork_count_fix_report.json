@@ -1,0 +1,48 @@
+{
+  "timestamp": "2025-08-12T15:52:26.225Z",
+  "totalUsers": 8,
+  "issuesFound": 6,
+  "issuesFixed": 6,
+  "userArtworkCounts": [
+    {
+      "name": "Test Admin",
+      "email": "admin@test.com",
+      "actualArtworkCount": 0
+    },
+    {
+      "name": "Test Artist",
+      "email": "artist@test.com",
+      "actualArtworkCount": 0
+    },
+    {
+      "name": "Priya Sharma",
+      "email": "priya.sharma@artistmail.com",
+      "actualArtworkCount": 3
+    },
+    {
+      "name": "Rajesh Kumar",
+      "email": "rajesh.kumar@warliart.com",
+      "actualArtworkCount": 2
+    },
+    {
+      "name": "Ananya Patel",
+      "email": "ananya.patel@gmail.com",
+      "actualArtworkCount": 2
+    },
+    {
+      "name": "Vikram Singh",
+      "email": "vikram.singh@miniaturepainting.com",
+      "actualArtworkCount": 2
+    },
+    {
+      "name": "Kavitha Nair",
+      "email": "kavitha.nair@keralart.com",
+      "actualArtworkCount": 4
+    },
+    {
+      "name": "Meera Shah",
+      "email": "meera.shah@heritageart.in",
+      "actualArtworkCount": 3
+    }
+  ]
+}

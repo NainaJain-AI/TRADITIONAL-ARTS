@@ -243,4 +243,24 @@ userSchema.methods.generateEmailVerificationToken = function() {
   return verificationToken;
 };
 
+
+// Enhanced password validation
+userSchema.methods.validatePasswordStrength = function(password) {
+  const requirements = {
+    minLength: password.length >= 12, // Increased from 8 to 12
+    hasUpperCase: /[A-Z]/.test(password),
+    hasLowerCase: /[a-z]/.test(password),
+    hasNumbers: /\d/.test(password),
+    hasSpecialChars: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    noCommonPatterns: !/password|123456|qwerty|admin|user/i.test(password)
+  };
+  
+  const score = Object.values(requirements).filter(Boolean).length;
+  return {
+    isValid: score >= 5, // Must meet at least 5 out of 6 requirements
+    requirements,
+    score
+  };
+};
+
 module.exports = mongoose.model('User', userSchema);

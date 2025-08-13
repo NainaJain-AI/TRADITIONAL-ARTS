@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaArrowLeft, FaHeart, FaEye, FaMapMarkerAlt, FaCalendarAlt, FaBookmark, FaUsers } from 'react-icons/fa';
+import { FaArrowLeft, FaHeart, FaEye, FaMapMarkerAlt, FaCalendarAlt, FaBookmark, FaUsers, FaDownload, FaTimes } from 'react-icons/fa';
 import LazyImage from '../components/LazyImage';
 import useSmoothScroll from '../hooks/useSmoothScroll';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import { showToast } from '../utils/toastUtils';
 import axios from "axios";
 import FollowButton from '../components/FollowButton';
 import VerificationBadge from '../components/VerificationBadge';
@@ -23,6 +24,8 @@ const ArtistProfile = () => {
   const [artworksLoading, setArtworksLoading] = useState(false);
   const [selectedArtwork, setSelectedArtwork] = useState(null);
   const [views, setViews] = useState(0);
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+  const [showFullscreen, setShowFullscreen] = useState(false);
 
   useSmoothScroll();
 
@@ -95,7 +98,7 @@ useEffect(() => {
               coverImage: '/assets/parallaximg.png',
               specialties: artistData.specialization ? [artistData.specialization] : ['Traditional Arts'],
               totalLikes: artistData.likesCount || 0,
-              totalViews: artistData.viewsCount || Math.floor(Math.random() * 1000) + 100,
+              totalViews: artistData.viewsCount || 0,
               joinedDate: artistData.createdAt || new Date().toISOString(),
               socialLinks: artistData.socialLinks || {},
               location: artistData.location || 'India'
@@ -126,7 +129,7 @@ useEffect(() => {
               coverImage: '/assets/parallaximg.png',
               specialties: artistData.specialization ? [artistData.specialization] : ['Traditional Arts'],
               totalLikes: artistData.likesCount || 0,
-              totalViews: artistData.viewsCount || Math.floor(Math.random() * 1000) + 100,
+              totalViews: artistData.viewsCount || 0,
               joinedDate: artistData.createdAt || new Date().toISOString(),
               socialLinks: artistData.socialLinks || {},
               location: artistData.location || 'India'
@@ -156,7 +159,7 @@ useEffect(() => {
     if (artistId) {
       fetchArtist();
     }
-  }, [artistId, isAuthenticated, user]);
+  }, [artistId]);
 
   // Fetch artworks for the artist
   const fetchArtworks = async (userId) => {
@@ -166,9 +169,19 @@ useEffect(() => {
       if (response.success && response.data) {
         setArtworks(response.data);
         
-        // Calculate aggregate statistics from artworks
-        const totalLikes = response.data.reduce((sum, artwork) => sum + (artwork.likes || 0), 0);
-        const totalBookmarks = response.data.reduce((sum, artwork) => sum + (artwork.bookmarks || 0), 0);
+        // Calculate aggregate statistics from artworks - STABILIZED
+        const totalLikes = response.data.reduce((sum, artwork) => {
+          const likeCount = typeof artwork.likes === 'number' ? artwork.likes : 
+                           (Array.isArray(artwork.likes) ? artwork.likes.length : 0);
+          return sum + likeCount;
+        }, 0);
+        
+        const totalBookmarks = response.data.reduce((sum, artwork) => {
+          const bookmarkCount = typeof artwork.bookmarks === 'number' ? artwork.bookmarks : 
+                               (Array.isArray(artwork.bookmarks) ? artwork.bookmarks.length : 0);
+          return sum + bookmarkCount;
+        }, 0);
+        
         const totalViews = response.data.reduce((sum, artwork) => sum + (artwork.views || 0), 0);
         
         // Update artist statistics with calculated values
@@ -192,6 +205,64 @@ useEffect(() => {
     }
   };
 
+  // Add fullscreen image functionality
+  const handleImageClick = (artwork) => {
+    setFullscreenImage(artwork);
+    setShowFullscreen(true);
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  };
+
+  const closeFullscreen = () => {
+    setShowFullscreen(false);
+    setFullscreenImage(null);
+    document.body.style.overflow = 'unset'; // Restore scrolling
+  };
+
+  const handleDownloadImage = async (imageUrl, title) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${title.replace(/\s+/g, '_')}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      showToast.success('Image downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      showToast.error('Failed to download image. Please try again.');
+    }
+  };
+
+  // Handle ESC key and browser back button for fullscreen
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && showFullscreen) {
+        closeFullscreen();
+      }
+    };
+
+    const handlePopState = () => {
+      if (showFullscreen) {
+        closeFullscreen();
+      }
+    };
+
+    if (showFullscreen) {
+      document.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('popstate', handlePopState);
+      // Push a state to handle back button
+      window.history.pushState({ fullscreen: true }, '');
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [showFullscreen]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -415,7 +486,7 @@ useEffect(() => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: index * 0.1 }}
                       whileHover={{ y: -5, scale: 1.02 }}
-                      onClick={() => setSelectedArtwork(artwork)}
+                      onClick={() => handleImageClick(artwork)}
                     >
                       <div className="relative">
                         <LazyImage
@@ -439,11 +510,17 @@ useEffect(() => {
                           <div className="flex items-center gap-3 text-sm">
                             <div className="flex items-center gap-1 text-red-500">
                               <FaHeart size={12} />
-                              <span>{artwork.likes || 0}</span>
+                              <span>
+                                {typeof artwork.likes === 'number' ? artwork.likes : 
+                                 (Array.isArray(artwork.likes) ? artwork.likes.length : 0)}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1 text-amber-600">
                               <FaBookmark size={12} />
-                              <span>{artwork.bookmarks || 0}</span>
+                              <span>
+                                {typeof artwork.bookmarks === 'number' ? artwork.bookmarks : 
+                                 (Array.isArray(artwork.bookmarks) ? artwork.bookmarks.length : 0)}
+                              </span>
                             </div>
                           </div>
                           <span className="text-xs text-gray-500">
@@ -468,57 +545,89 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Artwork Modal */}
+      {/* Fullscreen Image Modal */}
       <AnimatePresence>
-        {selectedArtwork && (
+        {showFullscreen && fullscreenImage && (
           <motion.div
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedArtwork(null)}
+            onClick={closeFullscreen}
           >
             <motion.div
-              className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto"
-              initial={{ scale: 0.5, opacity: 0 }}
+              className="relative max-w-7xl max-h-full w-full flex items-center justify-center"
+              initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.5, opacity: 0 }}
+              exit={{ scale: 0.8, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Close Button */}
+              <button
+                onClick={closeFullscreen}
+                className="absolute top-4 right-4 z-10 bg-black/50 backdrop-blur-sm text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/70 transition-all duration-300"
+              >
+                <FaTimes size={20} />
+              </button>
+              
+              {/* Download Button */}
+              <button
+                onClick={() => handleDownloadImage(fullscreenImage.imageUrl, fullscreenImage.title)}
+                className="absolute top-4 right-20 z-10 bg-black/50 backdrop-blur-sm text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/70 transition-all duration-300"
+                title="Download Image"
+              >
+                <FaDownload size={18} />
+              </button>
+
+              {/* Main Image */}
               <div className="relative">
                 <LazyImage
-                  src={selectedArtwork.imageUrl}
-                  alt={selectedArtwork.title}
-                  className="w-full h-96"
+                  src={fullscreenImage.imageUrl}
+                  alt={fullscreenImage.title}
+                  className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
                   aspectRatio=""
                 />
-                <button
-                  onClick={() => setSelectedArtwork(null)}
-                  className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/30 transition-all"
-                >
-                  ✕
-                </button>
-              </div>
-              
-              <div className="p-6">
-                <h3 className="text-2xl font-dm-serif font-bold bg-gradient-to-r from-[#134856] to-[#e05264] bg-clip-text text-transparent mb-2">{selectedArtwork.title}</h3>
-                <p className="text-[#E05264] font-lora mb-4 leading-relaxed">{selectedArtwork.description}</p>
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1 text-red-500">
-                      <FaHeart />
-                      <span>{selectedArtwork.likes || 0} likes</span>
+                {/* Image Info Overlay */}
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-lg"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <h3 className="text-2xl font-dm-serif font-bold text-white mb-2">{fullscreenImage.title}</h3>
+                  <p className="text-white/90 font-lora mb-3 leading-relaxed">{fullscreenImage.description}</p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1 text-red-400">
+                        <FaHeart size={16} />
+                        <span className="text-white">
+                          {typeof fullscreenImage.likes === 'number' ? fullscreenImage.likes : 
+                           (Array.isArray(fullscreenImage.likes) ? fullscreenImage.likes.length : 0)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-amber-400">
+                        <FaBookmark size={16} />
+                        <span className="text-white">
+                          {typeof fullscreenImage.bookmarks === 'number' ? fullscreenImage.bookmarks : 
+                           (Array.isArray(fullscreenImage.bookmarks) ? fullscreenImage.bookmarks.length : 0)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-green-400">
+                        <FaEye size={16} />
+                        <span className="text-white">{fullscreenImage.views || 0}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 text-blue-500">
-                      <FaBookmark />
-                      <span>{selectedArtwork.bookmarks || 0} bookmarks</span>
-                    </div>
+                    <span className="text-white/70 text-sm">
+                      {new Date(fullscreenImage.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
                   </div>
-                  <span className="text-gray-500">
-                    {new Date(selectedArtwork.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           </motion.div>

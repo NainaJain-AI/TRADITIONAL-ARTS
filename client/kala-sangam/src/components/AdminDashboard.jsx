@@ -192,10 +192,9 @@ const AdminDashboard = () => {
     try {
       setContentLoading(true);
       setError('');
-      console.log('Fetching artist-created events...');
-      // Only fetch events created by artists, not admins
+      console.log('Fetching all events...');
+      // Fetch all events for admin management
       const data = await adminApi.getAllEvents({ 
-        creatorRole: 'Artist',
         upcoming: 'false' // Get all events, not just upcoming
       });
       console.log('Artist events fetched:', data);
@@ -763,8 +762,8 @@ case 'settings':
               
               {events.length === 0 ? (
                 <div className="no-content">
-                  <p>No events created by artists found.</p>
-                  <p><small>Only events created by artists (not admins) are shown here.</small></p>
+                  <p>No events found.</p>
+                  <p><small>All events in the system are shown here.</small></p>
                 </div>
               ) : (
                 <div className="events-list">

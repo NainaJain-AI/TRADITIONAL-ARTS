@@ -653,17 +653,18 @@ const getArtists = async (req, res) => {
 
     const totalArtists = await User.countDocuments(filter);
 
-    // Import ArtForm model to count artworks
-    const ArtForm = require('../models/ArtForm');
+    // Import Artwork model to count actual artworks
+    const Artwork = require('../models/Artwork');
 
     // Add computed fields with real artwork count
     const artistsWithExtras = await Promise.all(artists.map(async (artist) => {
       const artistObj = artist.toObject();
       
-      // Count actual artworks for this artist
-      // Since ArtForm doesn't have userId field, we'll simulate artwork count
-      // In a real scenario, you'd have a proper Artwork model with artist reference
-      const artworkCount = Math.floor(Math.random() * 4) + 1; // 1-4 artworks
+      // Count actual artworks for this artist from the database
+      const artworkCount = await Artwork.countDocuments({ userId: artist._id, isActive: true });
+      
+      // Use user's artworks array length as it's already synced
+      const artworksArray = artist.artworks || [];
       
       // Count followers
       const followersCount = await User.countDocuments({ following: artist._id });
@@ -672,7 +673,7 @@ const getArtists = async (req, res) => {
         ...artistObj,
         isNew: artist.createdAt > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days
         followersCount,
-        artworks: Array(artworkCount).fill(null), // Create array with proper length
+        artworks: artworksArray, // Use the actual artworks array from user
         artworkCount,
         signatureWork: artist.avatar || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop'
       };

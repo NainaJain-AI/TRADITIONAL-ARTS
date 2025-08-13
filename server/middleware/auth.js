@@ -65,6 +65,46 @@ const authorize = (...roles) => {
   };
 };
 
+// Optional authentication - doesn't reject unauthenticated requests
+const optionalAuth = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      // No token provided, continue without user info
+      req.user = null;
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+    
+    if (!user) {
+      // Invalid token, continue without user info
+      req.user = null;
+      return next();
+    }
+
+    // Set user info if valid token
+    req.user = {
+      userId: user._id,
+      id: user._id, // Add both for compatibility
+      role: user.role,
+      name: user.name,
+      email: user.email,
+      isEmailVerified: user.isEmailVerified,
+      ...user.toObject()
+    };
+    
+    next();
+  } catch (error) {
+    // Invalid token, continue without user info
+    console.log('Optional auth middleware - invalid token:', error.message);
+    req.user = null;
+    next();
+  }
+};
+
 // Specific role middleware for common use cases
 const adminOnly = authorize('Admin');
 const artistOrAdmin = authorize('Artist', 'Admin');
@@ -75,5 +115,6 @@ module.exports = {
   authorize,
   adminOnly,
   artistOrAdmin,
-  authenticatedOnly
+  authenticatedOnly,
+  optionalAuth
 };

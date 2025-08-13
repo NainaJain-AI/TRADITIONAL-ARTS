@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import FullBleedDivider from '../components/FullBleedDivider';
 import { globalEvents, ARTWORK_EVENTS } from '../utils/eventEmitter';
+import DiagnosticComponent from '../debug/DiagnosticComponent';
+import MutationDetector from '../debug/MutationDetector';
 
 const ArtWall = () => {
   const { user, isAuthenticated, updateUser } = useAuth();
@@ -23,7 +25,7 @@ const ArtWall = () => {
   const [fullscreenImage, setFullscreenImage] = useState(null);
   const [showFullscreen, setShowFullscreen] = useState(false);
 
-  // Fetch artworks from API
+  // Fetch artworks from API - STABILIZED VERSION
   const fetchArtworks = async () => {
     try {
       setLoading(true);
@@ -34,29 +36,47 @@ const ArtWall = () => {
       });
       
       if (response.success) {
-        // Transform the API data to match frontend expectations
+        console.log('🔒 ArtWall - STABILIZED API fetch:', response.data.length, 'artworks');
+        
+        // EMERGENCY FIX: Use Object.freeze to prevent state mutations
         const transformedArtworks = response.data.map(artwork => {
-          console.log('ArtWall - Original artwork.userId:', artwork.userId, 'type:', typeof artwork.userId);
-          const transformedUserId = artwork.userId ? (typeof artwork.userId === 'object' ? artwork.userId._id : artwork.userId.toString()) : artwork.artistId?.toString();
-          console.log('ArtWall - Transformed userId:', transformedUserId, 'type:', typeof transformedUserId);
+          // Ensure we have consistent numeric values
+          const likeCount = typeof artwork.likes === 'number' ? artwork.likes : 
+                           (Array.isArray(artwork.likes) ? artwork.likes.length : 0);
+          const bookmarkCount = typeof artwork.bookmarks === 'number' ? artwork.bookmarks : 
+                               (Array.isArray(artwork.bookmarks) ? artwork.bookmarks.length : 0);
           
-          return {
+          // Create immutable artwork object
+          const stabilizedArtwork = Object.freeze({
             id: artwork._id || artwork.id,
             title: artwork.title || artwork.name,
             description: artwork.description,
             artist: artwork.artist || 'Cultural Heritage',
             imageUrl: artwork.imageUrl || artwork.image,
             category: artwork.category || 'Traditional Art',
-            likes: artwork.likes || [],
-            bookmarks: artwork.bookmarks || [],
-            likeCount: artwork.likeCount || (artwork.likes ? artwork.likes.length : 0),
-            bookmarkCount: artwork.bookmarkCount || (artwork.bookmarks ? artwork.bookmarks.length : 0),
+            likes: likeCount,
+            bookmarks: bookmarkCount,
+            likeCount: likeCount,
+            bookmarkCount: bookmarkCount,
             createdAt: artwork.createdAt || new Date().toISOString(),
-            userId: transformedUserId,
-            origin: artwork.origin
-          };
+            userId: artwork.userId ? 
+              (typeof artwork.userId === 'object' ? artwork.userId._id : artwork.userId.toString()) : 
+              artwork.artistId?.toString(),
+            origin: artwork.origin,
+            // Add timestamp to detect mutations
+            _fetchedAt: Date.now()
+          });
+          
+          console.log(`🔒 Stabilized "${stabilizedArtwork.title}": ${stabilizedArtwork.likes} likes, ${stabilizedArtwork.bookmarks} bookmarks`);
+          
+          return stabilizedArtwork;
         });
-        setArtworks(transformedArtworks);
+        
+        // Freeze the entire array to prevent mutations
+        const frozenArtworks = Object.freeze([...transformedArtworks]);
+        
+        console.log('🔒 ArtWall - Setting FROZEN artworks array:', frozenArtworks.length);
+        setArtworks(frozenArtworks);
       } else {
         console.error('Failed to fetch artworks:', response.message);
         setArtworks([]);
@@ -198,53 +218,74 @@ const ArtWall = () => {
       if (response.success) {
         console.log('ArtWall handleLike response:', { artworkId, response });
         
-        // Update local artworks state with new like count
+        // STABILIZED: Update local artworks state with new like count using proper immutable operations
         setArtworks(prev => {
           const updated = prev.map(art => {
             if (art.id === artworkId) {
-              const updatedArt = { 
-                ...art, 
-                likeCount: response.likeCount,
+              // Create completely new frozen object instead of mutating existing one
+              const updatedArt = Object.freeze({
+                id: art.id,
+                title: art.title,
+                description: art.description,
+                artist: art.artist,
+                imageUrl: art.imageUrl,
+                category: art.category,
                 likes: response.likes, // This is now a count, not array
-                isLiking: false
-              };
-              console.log('ArtWall updating artwork:', { 
-                original: art, 
-                updated: updatedArt,
+                bookmarks: art.bookmarks, // Keep existing bookmark count
+                likeCount: response.likeCount,
+                bookmarkCount: art.bookmarkCount || art.bookmarks,
+                createdAt: art.createdAt,
+                userId: art.userId,
+                origin: art.origin,
+                _fetchedAt: Date.now() // Update fetch timestamp
+              });
+              
+              console.log('🔒 ArtWall STABILIZED artwork update:', { 
+                original: { likes: art.likes, likeCount: art.likeCount },
+                updated: { likes: updatedArt.likes, likeCount: updatedArt.likeCount },
                 responseLikes: response.likes,
                 responseLikeCount: response.likeCount 
               });
+              
               return updatedArt;
             }
-            return art;
+            return art; // Return unchanged frozen object
           });
-          return updated;
+          
+          // Freeze the updated array
+          return Object.freeze([...updated]);
         });
         
-        // Update user's likes array in auth context
+        // STABILIZED: Update user's likes array in auth context with immutable operations
         if (user) {
-          const currentLikes = [...(user.likes || [])];
+          const originalLikes = user.likes || [];
           const artworkIdStr = artworkId.toString();
           
-          console.log('Before user likes update:', { currentLikes, artworkIdStr, liked: response.liked });
+          console.log('🔒 STABILIZED Before user likes update:', { originalLikes, artworkIdStr, liked: response.liked });
+          
+          let stabilizedLikes;
           
           if (response.liked) {
-            // Add to likes if not already there
-            if (!currentLikes.find(id => id.toString() === artworkIdStr)) {
-              currentLikes.push(artworkIdStr);
-              console.log('Added to likes:', currentLikes);
+            // Add to likes if not already there - use immutable operations
+            const hasLike = originalLikes.some(id => id.toString() === artworkIdStr);
+            if (!hasLike) {
+              stabilizedLikes = [...originalLikes, artworkIdStr];
+              console.log('🔒 STABILIZED Added to likes:', stabilizedLikes);
+            } else {
+              stabilizedLikes = [...originalLikes]; // No change needed
+              console.log('🔒 STABILIZED Like already exists, no change:', stabilizedLikes);
             }
           } else {
-            // Remove from likes
-            const index = currentLikes.findIndex(id => id.toString() === artworkIdStr);
-            if (index > -1) {
-              currentLikes.splice(index, 1);
-              console.log('Removed from likes:', currentLikes);
-            }
+            // Remove from likes - use immutable filter
+            stabilizedLikes = originalLikes.filter(id => id.toString() !== artworkIdStr);
+            console.log('🔒 STABILIZED Removed from likes:', stabilizedLikes);
           }
           
-          console.log('Updating user with new likes:', currentLikes);
-          updateUser({ likes: currentLikes });
+          // Freeze the array to prevent further mutations
+          const frozenLikes = Object.freeze([...stabilizedLikes]);
+          
+          console.log('🔒 STABILIZED Updating user with FROZEN likes:', frozenLikes);
+          updateUser({ likes: frozenLikes });
         }
         
         // Show toast message
@@ -315,14 +356,43 @@ const ArtWall = () => {
           return newBookmarks;
         });
         
-        // Update artworks state with new bookmark count
-        setArtworks(prev => prev.map(art => 
-          art.id === artworkId ? { 
-            ...art, 
-            bookmarkCount: response.bookmarkCount,
-            bookmarks: response.bookmarks // This is now a count, not array
-          } : art
-        ));
+        // STABILIZED: Update artworks state with new bookmark count using proper immutable operations
+        setArtworks(prev => {
+          const updated = prev.map(art => {
+            if (art.id === artworkId) {
+              // Create completely new frozen object instead of mutating existing one
+              const updatedArt = Object.freeze({
+                id: art.id,
+                title: art.title,
+                description: art.description,
+                artist: art.artist,
+                imageUrl: art.imageUrl,
+                category: art.category,
+                likes: art.likes, // Keep existing like count
+                bookmarks: response.bookmarks, // Updated bookmark count
+                likeCount: art.likeCount || art.likes,
+                bookmarkCount: response.bookmarkCount,
+                createdAt: art.createdAt,
+                userId: art.userId,
+                origin: art.origin,
+                _fetchedAt: Date.now() // Update fetch timestamp
+              });
+              
+              console.log('🔒 ArtWall STABILIZED bookmark update:', { 
+                original: { bookmarks: art.bookmarks, bookmarkCount: art.bookmarkCount },
+                updated: { bookmarks: updatedArt.bookmarks, bookmarkCount: updatedArt.bookmarkCount },
+                responseBookmarks: response.bookmarks,
+                responseBookmarkCount: response.bookmarkCount 
+              });
+              
+              return updatedArt;
+            }
+            return art; // Return unchanged frozen object
+          });
+          
+          // Freeze the updated array
+          return Object.freeze([...updated]);
+        });
         
         // Emit user stats update event
         globalEvents.emit(ARTWORK_EVENTS.USER_STATS_UPDATED, {
@@ -713,6 +783,12 @@ const ArtWall = () => {
           onClose={() => setShowModal(false)}
           onSubmit={handleArtworkSubmit}
         />
+        
+        {/* Diagnostic Component - Remove this after debugging */}
+        {isAuthenticated && <DiagnosticComponent />}
+        
+        {/* Mutation Detector - Remove this after debugging */}
+        <MutationDetector artworks={artworks} />
         </div>
       </div>
     </div>

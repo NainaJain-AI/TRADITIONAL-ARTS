@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const { auth } = require('../middleware/auth');
+const { authRateLimit, registerRateLimit, passwordResetRateLimit } = require('../middleware/rateLimiting');
 const { 
   register, 
   registerWithPhone,
@@ -19,10 +20,11 @@ const router = express.Router();
 
 router.post(
   '/register',
+  registerRateLimit,
   [
     body('name').trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
     body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+    body('password').isLength({ min: 12 }).withMessage('Password must be at least 12 characters')
   ],
   register
 );
@@ -30,16 +32,18 @@ router.post(
 // Phone registration route
 router.post(
   '/register-phone',
+  registerRateLimit,
   [
     body('name').trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
     body('phoneNumber').trim().isMobilePhone().withMessage('Please provide a valid phone number'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+    body('password').isLength({ min: 12 }).withMessage('Password must be at least 12 characters')
   ],
   registerWithPhone
 );
 
 router.post(
   '/login',
+  authRateLimit,
   [
     body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
     body('password').exists().withMessage('Password is required')
@@ -50,6 +54,7 @@ router.post(
 // Phone login route
 router.post(
   '/login-phone',
+  authRateLimit,
   [
     body('phoneNumber').trim().isMobilePhone().withMessage('Please provide a valid phone number'),
     body('password').exists().withMessage('Password is required')
@@ -59,6 +64,7 @@ router.post(
 
 router.post(
   '/admin-login',
+  authRateLimit,
   [
     body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
     body('password').exists().withMessage('Password is required')
@@ -68,13 +74,15 @@ router.post(
 
 router.post(
   '/forgot-password',
+  passwordResetRateLimit,
   [body('email').isEmail().normalizeEmail()],
   forgotPassword
 );
 
 router.put(
   '/reset-password/:resettoken',
-  [body('password').isLength({ min: 6 })],
+  passwordResetRateLimit,
+  [body('password').isLength({ min: 12 })],
   resetPassword
 );
 

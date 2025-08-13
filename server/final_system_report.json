@@ -1,0 +1,63 @@
+{
+  "timestamp": "2025-08-12T16:00:56.591Z",
+  "cleanup": {
+    "usersDeleted": 20,
+    "usersRemaining": 8,
+    "activeArtworks": 16
+  },
+  "functionality": {
+    "likesWorking": true,
+    "bookmarksWorking": true,
+    "errors": []
+  },
+  "activeUsers": [
+    {
+      "name": "Test Admin",
+      "email": "admin@test.com",
+      "password": "testadmin123456789",
+      "artworkCount": 0
+    },
+    {
+      "name": "Test Artist",
+      "email": "artist@test.com",
+      "password": "testartist123456789",
+      "artworkCount": 0
+    },
+    {
+      "name": "Priya Sharma",
+      "email": "priya.sharma@artistmail.com",
+      "password": "priyasharma123456789",
+      "artworkCount": 3
+    },
+    {
+      "name": "Rajesh Kumar",
+      "email": "rajesh.kumar@warliart.com",
+      "password": "rajeshkumar123456789",
+      "artworkCount": 2
+    },
+    {
+      "name": "Ananya Patel",
+      "email": "ananya.patel@gmail.com",
+      "password": "ananyapatel123456789",
+      "artworkCount": 2
+    },
+    {
+      "name": "Vikram Singh",
+      "email": "vikram.singh@miniaturepainting.com",
+      "password": "vikramsingh123456789",
+      "artworkCount": 2
+    },
+    {
+      "name": "Kavitha Nair",
+      "email": "kavitha.nair@keralart.com",
+      "password": "kavithanair123456789",
+      "artworkCount": 4
+    },
+    {
+      "name": "Meera Shah",
+      "email": "meera.shah@heritageart.in",
+      "password": "meerashah123456789",
+      "artworkCount": 3
+    }
+  ]
+}

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Contact = require('../models/Contact');
 const { body, validationResult } = require('express-validator');
+const sendEmail = require('../utils/sendEmail');
 
 // POST /api/contact - Submit contact form
 router.post('/', [
@@ -43,6 +44,39 @@ router.post('/', [
     });
 
     await contact.save();
+
+    // Send email notification to admin
+    try {
+      await sendEmail({
+        to: 'ourkalasangam2025@gmail.com',
+        subject: `New Contact Form Submission: ${subject}`,
+        text: `
+New message from Kala Sangam contact form:
+
+Name: ${name}
+Email: ${email}
+Subject: ${subject}
+
+Message:
+${message}
+
+Submitted on: ${new Date().toLocaleString()}
+        `,
+        html: `
+          <h2>New Contact Form Submission</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+          <p><strong>Message:</strong></p>
+          <p>${message}</p>
+          <p><strong>Submitted on:</strong> ${new Date().toLocaleString()}</p>
+        `
+      });
+      console.log('Contact form email notification sent successfully');
+    } catch (emailError) {
+      console.error('Failed to send contact form notification email:', emailError);
+      // Continue with the response even if email fails
+    }
 
     res.status(201).json({
       success: true,

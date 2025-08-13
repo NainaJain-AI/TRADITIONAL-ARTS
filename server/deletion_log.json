@@ -1,0 +1,128 @@
+{
+  "timestamp": "2025-08-12T15:48:11.221Z",
+  "totalUsersBeforeDeletion": 28,
+  "usersDeleted": 20,
+  "remainingUsers": 8,
+  "deletedAccounts": [
+    {
+      "name": "Naina Ramesh Jain",
+      "email": "honeyreorganizer@gmail.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T12:36:53.603Z"
+    },
+    {
+      "name": "Vaishali Dak",
+      "email": "vaishalidak0901@gmail.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T12:36:56.938Z"
+    },
+    {
+      "name": "Mohammed Hassan",
+      "email": "mohammed.hassan@kalamkari.art",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:38.250Z"
+    },
+    {
+      "name": "Lakshmi Devi",
+      "email": "lakshmi.traditional@yahoo.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:38.689Z"
+    },
+    {
+      "name": "Sneha Banerjee",
+      "email": "sneha.banerjee@artlover.in",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:39.541Z"
+    },
+    {
+      "name": "Arjun Gond",
+      "email": "arjun.gond@tribalart.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:40.006Z"
+    },
+    {
+      "name": "Nikita Verma",
+      "email": "nikita.verma@artworld.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:41.173Z"
+    },
+    {
+      "name": "Kamala Natarajan",
+      "email": "kamala.nat@traditionmail.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:41.614Z"
+    },
+    {
+      "name": "Leela Pandey",
+      "email": "leela.p@tapestry.co",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:42.044Z"
+    },
+    {
+      "name": "Aanya Chaudhary",
+      "email": "aanya.chaudhary@nativearts.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:42.925Z"
+    },
+    {
+      "name": "Pooja Agarwal",
+      "email": "pooja.agarwal@folkart.in",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:43.341Z"
+    },
+    {
+      "name": "Rashmi Kulkarni",
+      "email": "rashmi.kulkarni@handloom.co",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:43.773Z"
+    },
+    {
+      "name": "Indira Menon",
+      "email": "indira.menon@classicaldance.org",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:44.204Z"
+    },
+    {
+      "name": "honey",
+      "email": "u24ai024@aid.svnit.ac.in",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:44.653Z"
+    },
+    {
+      "name": "dimple",
+      "email": "dimplesharma@kalasangam.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:45.092Z"
+    },
+    {
+      "name": "someone",
+      "email": "something@gmail.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:45.625Z"
+    },
+    {
+      "name": "sunil",
+      "email": "sunilj2911@gmail.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:46.065Z"
+    },
+    {
+      "name": "Ayush Jain",
+      "email": "u24ch038@ched.svnit.ac.in",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:46.772Z"
+    },
+    {
+      "name": "Ojas Srivastava",
+      "email": "srivastavaojas454@gmail.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T14:25:47.185Z"
+    },
+    {
+      "name": "Test User",
+      "email": "test1755012593980@example.com",
+      "role": "Artist",
+      "createdAt": "2025-08-12T15:29:54.210Z"
+    }
+  ]
+}

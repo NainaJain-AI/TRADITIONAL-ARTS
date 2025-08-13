@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark, FaFlag } from 'react-icons/fa';
 import { showToast } from '../utils/toastUtils';
@@ -12,17 +12,40 @@ const ArtCard = ({ artwork, index, currentUser, isBookmarked: initialBookmarked,
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   
-  // Calculate like state directly from current user state - no local state needed
-  const isLiked = currentUser && currentUser.likes ? (() => {
+  // STABILIZED: Calculate like state using useMemo to prevent recalculation on every render
+  const isLiked = useMemo(() => {
+    if (!currentUser || !currentUser.likes || !artwork) return false;
     const artworkIdStr = artwork.id ? artwork.id.toString() : artwork._id?.toString();
+    if (!artworkIdStr) return false;
+    
     const result = currentUser.likes.some(id => id.toString() === artworkIdStr);
-    console.log('ArtCard isLiked calculation:', { 
+    console.log('🔒 ArtCard STABILIZED isLiked calculation:', { 
       artworkId: artworkIdStr, 
-      userLikes: currentUser.likes, 
+      userLikes: currentUser.likes.length, 
       isLiked: result 
     });
     return result;
-  })() : false;
+  }, [currentUser?.likes, artwork?.id, artwork?._id]);
+  
+  // STABILIZED: Calculate display counts using useMemo to prevent recalculation
+  const displayCounts = useMemo(() => {
+    const likeCount = typeof artwork.likes === 'number' ? artwork.likes : 
+                     (artwork.likeCount ?? 0);
+    const bookmarkCount = typeof artwork.bookmarks === 'number' ? artwork.bookmarks : 
+                         (artwork.bookmarkCount ?? 0);
+    
+    console.log('🔒 ArtCard STABILIZED counts calculation:', { 
+      artworkId: artwork.id, 
+      likes: artwork.likes, 
+      likeCount: artwork.likeCount, 
+      bookmarks: artwork.bookmarks,
+      bookmarkCount: artwork.bookmarkCount,
+      finalLikes: likeCount,
+      finalBookmarks: bookmarkCount
+    });
+    
+    return { likeCount, bookmarkCount };
+  }, [artwork.likes, artwork.likeCount, artwork.bookmarks, artwork.bookmarkCount, artwork.id]);
   
   // Update bookmarked state based on current user state
   useEffect(() => {
@@ -218,31 +241,13 @@ const ArtCard = ({ artwork, index, currentUser, isBookmarked: initialBookmarked,
             <div className="flex items-center space-x-1 text-red-500">
               <FaHeart size={14} />
               <span className="text-sm font-medium">
-                {(() => {
-                  const likeCount = Array.isArray(artwork.likes) ? artwork.likes.length : (artwork.likes ?? artwork.likeCount ?? 0);
-                  console.log('ArtCard like display:', { 
-                    artworkId: artwork.id, 
-                    likes: artwork.likes, 
-                    likeCount: artwork.likeCount, 
-                    displayValue: likeCount 
-                  });
-                  return likeCount;
-                })()}
+                {displayCounts.likeCount}
               </span>
             </div>
             <div className="flex items-center space-x-1 text-amber-600">
               <FaBookmark size={14} />
               <span className="text-sm font-medium">
-                {(() => {
-                  const bookmarkCount = Array.isArray(artwork.bookmarks) ? artwork.bookmarks.length : (artwork.bookmarks ?? artwork.bookmarkCount ?? 0);
-                  console.log('ArtCard bookmark display:', { 
-                    artworkId: artwork.id, 
-                    bookmarks: artwork.bookmarks, 
-                    bookmarkCount: artwork.bookmarkCount, 
-                    displayValue: bookmarkCount 
-                  });
-                  return bookmarkCount;
-                })()}
+                {displayCounts.bookmarkCount}
               </span>
             </div>
           </div>

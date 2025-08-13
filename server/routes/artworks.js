@@ -66,30 +66,35 @@ router.get("/", async (req, res) => {
     const totalPages = Math.ceil(totalCount / parseInt(limit));
 
     // Transform data to match frontend expectations
-    const transformedArtworks = artworks.map(artwork => ({
-      _id: artwork._id,
-      id: artwork._id,
-      title: artwork.title,
-      artist: artwork.artist,
-      description: artwork.description,
-      imageUrl: artwork.imageUrl,
-      image: artwork.imageUrl, // Alternative field name for compatibility
-      category: artwork.category,
-      artform: artwork.artform,
-      likes: artwork.likes.length,
-      bookmarks: artwork.bookmarks.length,
-      views: artwork.views || 0,
-      likeCount: artwork.likeCount,
-      bookmarkCount: artwork.bookmarkCount,
-      comments: artwork.comments ? artwork.comments.length : 0,
-      tags: artwork.tags || [],
-      location: artwork.location,
-      isPublic: artwork.isPublic,
-      isActive: artwork.isActive,
-      createdAt: artwork.createdAt,
-      updatedAt: artwork.updatedAt,
-      userId: artwork.userId
-    }));
+    const transformedArtworks = artworks.map(artwork => {
+      const likeCount = artwork.likes ? artwork.likes.length : 0;
+      const bookmarkCount = artwork.bookmarks ? artwork.bookmarks.length : 0;
+      
+      return {
+        _id: artwork._id,
+        id: artwork._id,
+        title: artwork.title,
+        artist: artwork.artist,
+        description: artwork.description,
+        imageUrl: artwork.imageUrl,
+        image: artwork.imageUrl, // Alternative field name for compatibility
+        category: artwork.category,
+        artform: artwork.artform,
+        likes: likeCount, // Always return count as number
+        bookmarks: bookmarkCount, // Always return count as number
+        views: artwork.views || 0,
+        likeCount: likeCount, // Keep for compatibility
+        bookmarkCount: bookmarkCount, // Keep for compatibility
+        comments: artwork.comments ? artwork.comments.length : 0,
+        tags: artwork.tags || [],
+        location: artwork.location,
+        isPublic: artwork.isPublic,
+        isActive: artwork.isActive,
+        createdAt: artwork.createdAt,
+        updatedAt: artwork.updatedAt,
+        userId: artwork.userId
+      };
+    });
 
     res.json({
       success: true,

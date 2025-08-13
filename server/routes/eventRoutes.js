@@ -15,7 +15,8 @@ router.get('/', async (req, res) => {
       city, 
       state, 
       upcoming = 'true',
-      creatorRole // new parameter to filter by creator role
+      creatorRole, // parameter to filter by creator role
+      admin // admin flag to get all events regardless of creator
     } = req.query;
 
     // Build filter object
@@ -36,7 +37,16 @@ router.get('/', async (req, res) => {
     }
 
     let events;
-    if (creatorRole) {
+    if (admin === 'true') {
+      // Admin request - get all events regardless of creator status
+      events = await Event.find(filter)
+        .populate('createdBy', 'name email role')
+        .sort({ date: 1 })
+        .limit(100);
+      
+      // For admin, also include events with missing/invalid createdBy
+      console.log(`Admin request: Found ${events.length} events`);
+    } else if (creatorRole) {
       // If filtering by creator role, populate and filter
       events = await Event.find(filter)
         .populate('createdBy', 'role')
@@ -45,7 +55,9 @@ router.get('/', async (req, res) => {
       
       events = events.filter(event => event.createdBy && event.createdBy.role === creatorRole);
     } else {
-      events = await Event.find(filter)
+      // Regular request - only events with valid creators
+      events = await Event.find({ ...filter, createdBy: { $exists: true, $ne: null } })
+        .populate('createdBy', 'name email role')
         .sort({ date: 1 })
         .limit(100);
     }

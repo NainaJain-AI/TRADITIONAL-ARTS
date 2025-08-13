@@ -291,13 +291,15 @@ export const adminApi = {
   getAllEvents: async (options = {}) => {
     const queryParams = new URLSearchParams();
     
-    // Add option to filter by creator role
+    // Add option to filter by creator role (but don't use it by default for admin)
     if (options.creatorRole) {
       queryParams.append('creatorRole', options.creatorRole);
     }
     if (options.upcoming !== undefined) {
       queryParams.append('upcoming', options.upcoming);
     }
+    // Add admin flag to get all events regardless of creator
+    queryParams.append('admin', 'true');
 
     const url = `${API_URL}/api/events${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     
