@@ -1,52 +1,58 @@
-// Admin Login Debug Test
-// Run this in browser console after attempting admin login
+const mongoose = require('mongoose');
+const User = require('./models/User');
+require('dotenv').config();
 
-console.log('=== ADMIN LOGIN DEBUG TEST ===');
-
-// Check localStorage contents
-console.log('1. LocalStorage Contents:');
-console.log('- token:', localStorage.getItem('token') ? 'EXISTS' : 'MISSING');
-console.log('- user:', localStorage.getItem('user'));
-console.log('- userRole:', localStorage.getItem('userRole'));
-
-// Try to parse user object
-const userStr = localStorage.getItem('user');
-if (userStr) {
+const testAdminLogin = async () => {
   try {
-    const user = JSON.parse(userStr);
-    console.log('2. Parsed User Object:');
-    console.log('- user.id:', user.id);
-    console.log('- user.name:', user.name);
-    console.log('- user.role:', user.role);
-    console.log('- user.email:', user.email);
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/kalasangam');
+    console.log('🔗 Connected to MongoDB');
+    
+    // Test the admin user
+    const email = 'admin@test.com';
+    const password = 'admin123';
+    
+    console.log('\n🔍 Testing admin login...');
+    console.log('Email:', email);
+    console.log('Password:', password);
+    
+    // Find user
+    const user = await User.findOne({ email });
+    console.log('\n👤 User found:', !!user);
+    
+    if (user) {
+      console.log('User details:');
+      console.log('- Name:', user.name);
+      console.log('- Email:', user.email);
+      console.log('- Role:', user.role);
+      console.log('- Email Verified:', user.isEmailVerified);
+      
+      // Test password
+      const isMatch = await user.comparePassword(password);
+      console.log('\n🔑 Password match:', isMatch);
+      
+      if (user.role === 'Admin') {
+        console.log('✅ User has Admin role');
+      } else {
+        console.log('❌ User does NOT have Admin role');
+      }
+      
+      if (isMatch && user.role === 'Admin') {
+        console.log('\n🎉 ADMIN LOGIN SHOULD WORK!');
+        console.log('Use these credentials:');
+        console.log('Email: admin@test.com');
+        console.log('Password: admin123');
+      } else {
+        console.log('\n❌ Admin login will fail');
+      }
+    } else {
+      console.log('❌ Admin user not found');
+    }
+    
+    process.exit(0);
   } catch (error) {
-    console.log('2. Error parsing user:', error);
+    console.error('💥 Error:', error.message);
+    process.exit(1);
   }
-}
+};
 
-// Test ProtectedRoute logic
-console.log('3. ProtectedRoute Logic Test:');
-const token = localStorage.getItem('token');
-let userRole = localStorage.getItem('userRole');
-const userString = localStorage.getItem('user');
-
-if (!userRole && userString) {
-  try {
-    const user = JSON.parse(userString);
-    userRole = user.role;
-    console.log('- Role extracted from user object:', userRole);
-  } catch (error) {
-    console.log('- Error extracting role:', error);
-  }
-}
-
-const allowedRoles = ['Admin'];
-console.log('- Has token:', !!token);
-console.log('- User role:', userRole);
-console.log('- Allowed roles:', allowedRoles);
-console.log('- Role check passes:', allowedRoles.includes(userRole));
-
-// Check current URL
-console.log('4. Current Location:', window.location.pathname);
-
-console.log('=== END DEBUG TEST ===');
+testAdminLogin();

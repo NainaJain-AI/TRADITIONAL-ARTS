@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-require('dotenv').config({ path: './server/.env' });
+require('dotenv').config();
 
 console.log('Testing MongoDB connection...');
 console.log('MONGO_URI:', process.env.MONGO_URI ? 'Set' : 'Not set');
