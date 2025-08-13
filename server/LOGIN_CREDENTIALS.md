@@ -1,16 +1,10 @@
-# 🔐 Login/Signup Credentials & Troubleshooting Guide
+# Login/Signup Credentials & Troubleshooting Guide
 
-## ✅ ISSUE RESOLVED!
+##  ISSUE RESOLVED!
 
 The login/signup functionality is now working correctly. The main issue was that the test users were created with passwords shorter than the required 12-character minimum length enforced by the validation.
 
-## 🧪 Working Test Credentials
-
-### Admin User
-- **Email:** `admin@test.com`
-- **Password:** `admin123456789`
-- **Role:** Admin
-- **Login Endpoint:** `/api/auth/login` OR `/api/auth/admin-login`
+## Working Test Credentials
 
 ### Artist User  
 - **Email:** `artist@test.com`
@@ -18,13 +12,13 @@ The login/signup functionality is now working correctly. The main issue was that
 - **Role:** Artist
 - **Login Endpoint:** `/api/auth/login`
 
-## 🔧 What Was Fixed
+##  What Was Fixed
 
 1. **Password Length Issue**: Updated test user passwords from 8-9 characters to meet the 12-character minimum requirement
 2. **Password Validation**: The server enforces a 12-character minimum for all passwords
 3. **Authentication Flow**: All login/signup endpoints are working correctly
 
-## 📋 API Endpoints
+## API Endpoints
 
 ### Authentication Endpoints
 - `POST /api/auth/register` - User registration (requires 12+ char password)
@@ -42,7 +36,7 @@ The login/signup functionality is now working correctly. The main issue was that
 - Should include mix of letters, numbers, and special characters
 - Examples: `admin123456789`, `MySecurePassword123!`
 
-## 🧪 Testing
+##  Testing
 
 Run the comprehensive test suite:
 ```bash
@@ -50,21 +44,21 @@ node testAuthAPI.js
 ```
 
 This will test:
-- ✅ Admin login
-- ✅ Artist login  
-- ✅ New user registration
-- ✅ Invalid login rejection
-- ✅ Admin-specific login
-- ✅ Role-based access control
+-  Admin login
+-  Artist login  
+-  New user registration
+-  Invalid login rejection
+-  Admin-specific login
+-  Role-based access control
 
-## 🚀 Server Status
+## Server Status
 
 - Server running on port: `5050`
 - MongoDB: Connected
 - Environment: `development`
 - Base URL: `http://localhost:5174`
 
-## 📝 Notes
+##  Notes
 
 1. All test users have `isEmailVerified: true` for immediate login
 2. New registrations require email verification (but can login immediately)
@@ -72,12 +66,10 @@ This will test:
 4. CORS is configured to allow localhost connections
 5. Rate limiting is applied to prevent abuse
 
-## 🐛 If Issues Persist
+##  If Issues Persist
 
 1. Check server is running: `npm start`
 2. Verify MongoDB connection in server logs
 3. Ensure passwords meet 12-character minimum
 4. Check network connectivity (localhost:5050)
 5. Review server logs for specific error messages
-
-Last updated: August 12, 2025
